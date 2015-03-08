@@ -1,0 +1,13 @@
+/build/
+/.cross-compile-*.env
+/.deps/
+/meta-*/
+!/meta-pch-bsp/
+!/meta-openpch/
+!/meta-openembedded/
+/persist-cache/
+/sources/
+/sstate-cache/
+/tmp*/
+/bitbake.env
+*.swp

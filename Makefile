@@ -128,7 +128,7 @@ help:
 	@echo "      $$ source bitbake.env"
 	@echo "      $$ cd build/$(MACHINE)"
 	@echo "      $$ bitbake <target>"
-	@echo "    [Replace <target> with a recipe name, e.g. $(MAKE_IMAGE_BB) or enigma2]"
+	@echo "    [Replace <target> with a recipe name, e.g. coreutils]"
 	@echo
 	@echo "Your current settings:"
 	@echo "  MACHINE = $(USER_MACHINE)"

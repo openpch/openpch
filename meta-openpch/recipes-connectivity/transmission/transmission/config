@@ -1,0 +1,8 @@
+# Default values for transmission daemon
+# please fill in and enable service.
+# Set DAEMON_USER to run under different credentials
+DAEMON_USER="nmt"
+DAEMON_GROUP="nmt"
+CONFIG_DIR="/usr/local/etc/transmission/transmission-daemon"
+# options to pass to startup command
+TRANSOPTIONS="-g ${CONFIG_DIR}"

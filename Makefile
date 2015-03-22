@@ -310,6 +310,7 @@ $(TOPDIR)/conf/bitbake.conf: openembedded-core/meta/conf/bitbake.conf
 	@test -d $(@D) || mkdir -p $(@D)
 	@echo '# Automatically generated file from $<. Do not edit!' > $@
 	@cat $< | sed -E 's@^(export (base_|exec_)?prefix *= )"[^"]*"@\1"/usr/local"@' >> $@
+	@sed -i 's@^PSEUDO_PASSWD.*@PSEUDO_PASSWD ?= "$${STAGING_DIR_TARGET}$${base_prefix}"@' $@
 
 CROSS_COMPILE_ENV_BLACKLIST = \
 	HOME LOGNAME PWD SHELL SSH_AGENT_PID SSH_AUTH_SOCK TERM USER

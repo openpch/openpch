@@ -1,4 +1,4 @@
-# Specific version for openpch where busybox is compile with a prefix of /usr/local
+# Specific version for openpch where busybox is compile with a prefix of /share/Apps/openpch
 
 SUMMARY = "Tiny versions of many common UNIX utilities in a single small executable"
 DESCRIPTION = "BusyBox combines tiny versions of many common UNIX utilities into a single small executable. It provides minimalist replacements for most of the utilities you usually find in GNU fileutils, shellutils, etc. The utilities in BusyBox generally have fewer options than their full-featured GNU cousins; however, the options that are included provide the expected functionality and behave very much like their GNU counterparts. BusyBox provides a fairly complete POSIX environment for any small or embedded system."
@@ -109,6 +109,12 @@ do_prepare_config () {
 		< ${WORKDIR}/defconfig > ${S}/.config
 	sed -i -e '/CONFIG_STATIC/d' .config
 	echo "# CONFIG_STATIC is not set" >> .config
+	sed -i -e '/CONFIG_INSTALL_NO_USR/d' .config
+	if [ "${prefix}" != "/usr" ]; then
+	    echo 'CONFIG_INSTALL_NO_USR=y' >> .config
+	else
+	    echo "# CONFIG_INSTALL_NO_USR is not set" >> .config
+	fi
 	for i in 'CROSS' 'DISTRO FEATURES'; do echo "### $i"; done >> \
 		${S}/.config
 	sed -i -e '${configmangle}' ${S}/.config
@@ -174,17 +180,17 @@ do_compile() {
 }
 
 do_install () {
-	if [ "${prefix}" != "/usr" ]; then
-		sed -i "s:^/usr/:${prefix}/:" busybox.links*
+	if [ "${bindir}" != "/bin" ]; then
+		sed -i "s:^/bin/:${bindir}/:" busybox.links*
 	fi
-	if [ "${base_sbindir}" != "/sbin" ]; then
-		sed -i "s:^/sbin/:${base_sbindir}/:" busybox.links*
+	if [ "${sbindir}" != "/sbin" ]; then
+		sed -i "s:^/sbin/:${sbindir}/:" busybox.links*
 	fi
 
 	install -d ${D}${sysconfdir}/init.d
 
 	if ! grep -q "CONFIG_FEATURE_INDIVIDUAL=y" ${B}/.config; then
-		# Install /usr/local/bin/busybox, and the /usr/local/bin/sh link so the postinst script
+		# Install /share/Apps/openpch/bin/busybox, and the /share/Apps/openpch/bin/sh link so the postinst script
 		# can run. Let update-alternatives handle the rest.
 		install -d ${D}${base_bindir}
 		if [ "${BUSYBOX_SPLIT_SUID}" = "1" ]; then
@@ -212,7 +218,7 @@ do_install () {
 			# We make this symlink here to eliminate the error when upgrading together
 			# with busybox-syslog. Without this symlink, the opkg may think of the
 			# busybox.nosuid as obsolete and remove it, resulting in dead links like
-			# /usr/local/bin/sed -> /usr/local/bin/busybox.nosuid. This will make upgrading busybox-syslog fail.
+			# /share/Apps/openpch/bin/sed -> /share/Apps/openpch/bin/busybox.nosuid. This will make upgrading busybox-syslog fail.
 			# This symlink will be safely deleted in postinst, thus no negative effect.
 			ln -sf busybox ${D}${base_bindir}/busybox.nosuid
 		fi
@@ -319,11 +325,13 @@ python () {
 }
 
 python do_package_prepend () {
-    # We need to load the full set of busybox provides from the /usr/local/etc/busybox.links
+    # We need to load the full set of busybox provides from the /share/Apps/openpch/etc/busybox.links
     # Use this to see the update-alternatives with the right information
 
     dvar = d.getVar('D', True)
     pn = d.getVar('PN', True)
+    sysconfdir = d.getVar('sysconfdir', True)
+    bindir = d.getVar('bindir', True)
     def set_alternative_vars(links, target):
         f = open('%s%s' % (dvar, links), 'r')
         for alt_link_name in f:
@@ -339,11 +347,11 @@ python do_package_prepend () {
         f.close()
         return
 
-    if os.path.exists('%s/usr/local/etc/busybox.links' % (dvar)):
-        set_alternative_vars("/usr/local/etc/busybox.links", "/usr/local/bin/busybox")
+    if os.path.exists('%s%s/busybox.links' % (dvar, sysconfdir)):
+        set_alternative_vars("%s/busybox.links" % (sysconfdir), "%s/busybox" % (bindir))
     else:
-        set_alternative_vars("/usr/local/etc/busybox.links.nosuid", "/usr/local/bin/busybox.nosuid")
-        set_alternative_vars("/usr/local/etc/busybox.links.suid", "/usr/local/bin/busybox.suid")
+        set_alternative_vars("%s/busybox.links.nosuid" % (sysconfdir), "%s/busybox.nosuid" % (bindir))
+        set_alternative_vars("%s/busybox.links.suid" % (sysconfdir), "%s/busybox.suid" % (bindir))
 }
 
 pkg_postinst_${PN} () {
@@ -355,11 +363,11 @@ pkg_postinst_${PN} () {
 	if test "x$D" = "x"; then
 		# Remove busybox.nosuid if it's a symlink, because this situation indicates
 		# that we're installing or upgrading to a one-binary busybox.
-		if test -h /usr/local/bin/busybox.nosuid; then
-			rm -f /usr/local/bin/busybox.nosuid
+		if test -h /share/Apps/openpch/bin/busybox.nosuid; then
+			rm -f /share/Apps/openpch/bin/busybox.nosuid
 		fi
 		for suffix in "" ".nosuid" ".suid"; do
-			if test -e /usr/local/etc/busybox.links$suffix; then
+			if test -e /share/Apps/openpch/etc/busybox.links$suffix; then
 				while read link; do
 					if test ! -e "$link"; then
 						case "$link" in
@@ -374,11 +382,11 @@ pkg_postinst_${PN} () {
 								;;
 						esac
 						# we can use busybox here because even if we are using splitted busybox
-						# we've made a symlink from /usr/local/bin/busybox to /usr/local/bin/busybox.nosuid.
+						# we've made a symlink from /share/Apps/openpch/bin/busybox to /share/Apps/openpch/bin/busybox.nosuid.
 						busybox rm -f $link
 						busybox ln -s $to $link
 					fi
-				done < /usr/local/etc/busybox.links$suffix
+				done < /share/Apps/openpch/etc/busybox.links$suffix
 			fi
 		done
 	fi
@@ -389,19 +397,19 @@ pkg_prerm_${PN} () {
 	# providing its files, this will make update-alternatives work, but the update-rc.d part
 	# for syslog, httpd and/or udhcpd will fail if there is no other package providing sh
 	tmpdir=`mktemp -d /tmp/busyboxrm-XXXXXX`
-	ln -s /usr/local/bin/busybox $tmpdir/[
-	ln -s /usr/local/bin/busybox $tmpdir/test
-	ln -s /usr/local/bin/busybox $tmpdir/head
-	ln -s /usr/local/bin/busybox $tmpdir/sh
-	ln -s /usr/local/bin/busybox $tmpdir/basename
-	ln -s /usr/local/bin/busybox $tmpdir/echo
-	ln -s /usr/local/bin/busybox $tmpdir/mv
-	ln -s /usr/local/bin/busybox $tmpdir/ln
-	ln -s /usr/local/bin/busybox $tmpdir/dirname
-	ln -s /usr/local/bin/busybox $tmpdir/rm
-	ln -s /usr/local/bin/busybox $tmpdir/sed
-	ln -s /usr/local/bin/busybox $tmpdir/sort
-	ln -s /usr/local/bin/busybox $tmpdir/grep
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/[
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/test
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/head
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/sh
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/basename
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/echo
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/mv
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/ln
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/dirname
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/rm
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/sed
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/sort
+	ln -s /share/Apps/openpch/bin/busybox $tmpdir/grep
 	export PATH=$PATH:$tmpdir
 }
 
@@ -409,7 +417,7 @@ pkg_prerm_${PN}-syslog () {
 	# remove syslog
 	if test "x$D" = "x"; then
 		if test "$1" = "upgrade" -o "$1" = "remove"; then
-			/usr/local/etc/init.d/syslog stop
+			/share/Apps/openpch/etc/init.d/syslog stop
 		fi
 	fi
 }

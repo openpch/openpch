@@ -55,6 +55,7 @@ PERSISTENT_DIR = $(CURDIR)/persist-cache
 SSTATE_DIR = $(CURDIR)/sstate-cache
 TMPDIR = $(TOPDIR)/tmp
 DEPDIR = $(CURDIR)/.deps
+PATCHDIR = $(CURDIR)/patches
 
 BITBAKE = . $(CURDIR)/bitbake.env && cd $(TOPDIR) && bitbake
 
@@ -71,6 +72,7 @@ BBLAYERS ?= \
 
 CONFFILES_AUTO = \
 	bitbake.env \
+	conf/bitbake.conf \
 	conf/openpch.conf \
 	$(TOPDIR)/conf/bitbake.conf \
 	$(TOPDIR)/conf/bblayers.conf \
@@ -87,9 +89,8 @@ CONFDEPS = \
 	$(DEPDIR)/.cross-compile.env.$(MACHINE).$(CROSS_COMPILE_ENV_HASH)
 
 CONFFILES_BITBAKE = \
+    conf/bitbake.conf \
 	conf/openpch.conf \
-    $(TOPDIR)/conf/bitbake.conf \
-	openembedded-core/meta/conf/bitbake.conf \
 	$(wildcard \
 		conf/bblayers-ext.conf \
 		conf/bblayers-$(MACHINE)-ext.conf \
@@ -206,8 +207,16 @@ update:
 		echo "[*] The SDK is now up-to-date."; \
 	fi
 
-.PHONY: all clean help init update usage
+patches: $(PATCHDIR)/bitbake.conf.patch
 
+$(PATCHDIR)/bitbake.conf.patch: conf/bitbake.conf openembedded-core/meta/conf/bitbake.conf
+	@echo '[*] Generating $@'
+	@diff -u openembedded-core/meta/conf/bitbake.conf conf/bitbake.conf \
+		> $@ ; [ $$? -eq 1 ]
+
+.PHONY: all clean help init update usage patches
+
+BITBAKE_INCLUDE_CONF = $(CURDIR)/conf/bitbake.conf
 MACHINE_INCLUDE_CONF = $(CURDIR)/conf/$(basename $(@F))-$(MACHINE)-ext.conf
 DISTRO_INCLUDE_CONF  = $(CURDIR)/conf/$(basename $(@F))-ext.conf
 
@@ -290,6 +299,7 @@ BBLAYERS_CONF_HASH := $(call hash, \
 	'LCONF_VERSION = "$(LCONF_VERSION)"' \
 	'BBFILES = "$(BBFILES)"' \
 	'BBLAYERS = "$(BBLAYERS)"' \
+	'BITBAKE_INCLUDE_CONF = "$(BITBAKE_INCLUDE_CONF)"' \
 	'DISTRO_INCLUDE_CONF = "$(DISTRO_INCLUDE_CONF)"' \
 	'MACHINE_INCLUDE_CONF = "$(MACHINE_INCLUDE_CONF)"' \
 	)
@@ -304,13 +314,17 @@ $(TOPDIR)/conf/bblayers.conf: $(DEPDIR)/.bblayers.conf.$(MACHINE).$(BBLAYERS_CON
 	@echo 'include $(DISTRO_INCLUDE_CONF)' >> $@
 	@echo 'include $(MACHINE_INCLUDE_CONF)' >> $@
 
-# Specific to openpch to change the prfix
-$(TOPDIR)/conf/bitbake.conf: openembedded-core/meta/conf/bitbake.conf
+# Specific to openpch to change some options for openpch 
+conf/bitbake.conf: openembedded-core/meta/conf/bitbake.conf
 	@echo '[*] Generating $@'
 	@test -d $(@D) || mkdir -p $(@D)
-	@echo '# Automatically generated file from $<. Do not edit!' > $@
-	@cat $< | sed -E 's@^(export (base_|exec_)?prefix *= )"[^"]*"@\1"/usr/local"@' >> $@
-	@sed -i 's@^PSEUDO_PASSWD.*@PSEUDO_PASSWD ?= "$${STAGING_DIR_TARGET}$${base_prefix}"@' $@
+	@cp -f $< $@
+	@patch -s -t -d conf < "$(PATCHDIR)"/bitbake.conf.patch
+
+$(TOPDIR)/conf/bitbake.conf: $(CURDIR)/conf/bitbake.conf
+	@echo '[*] Linking $@ to $<'
+	@test -d $(@D) || mkdir -p $(@D)
+	@ln -s -f $< $@
 
 CROSS_COMPILE_ENV_BLACKLIST = \
 	HOME LOGNAME PWD SHELL SSH_AGENT_PID SSH_AUTH_SOCK TERM USER

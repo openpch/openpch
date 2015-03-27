@@ -1,4 +1,5 @@
 bblayers-*ext.conf
 local-*ext.conf
+bitbake.conf
 openpch.conf
 make.conf

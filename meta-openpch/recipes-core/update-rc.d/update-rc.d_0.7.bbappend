@@ -3,5 +3,5 @@ do_patch_append() {
 }
 
 do_fix_etc () {
-    sed -i -e "s#/etc/#${sysconfdir}/#g" ${S}/update-rc.d
+    sed -i -e "s#/etc/#${base_prefix_target}/etc/#g" ${S}/update-rc.d
 }

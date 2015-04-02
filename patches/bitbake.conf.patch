@@ -1,11 +1,11 @@
---- openembedded-core/meta/conf/bitbake.conf	2015-03-25 19:24:29.527397951 +0100
-+++ conf/bitbake.conf	2015-03-27 14:08:59.892316597 +0100
+--- openembedded-core/meta/conf/bitbake.conf	2015-04-02 13:18:18.746799364 +0200
++++ conf/bitbake.conf	2015-04-02 13:28:56.741941347 +0200
 @@ -1,3 +1,4 @@
 +# Automatically generated file with command make patches. Do not edit!
  ##################################################################
  # Standard target filesystem paths.
  ##################################################################
-@@ -13,9 +14,9 @@
+@@ -13,9 +14,12 @@
  BASELIB_powerpc64 = "lib64"
  
  # Path prefixes
@@ -15,6 +15,9 @@
 +export base_prefix = "/share/Apps/openpch"
 +export prefix = "/share/Apps/openpch"
 +export exec_prefix = "/share/Apps/openpch"
++
++# Add for openpch and update-rc.d
++export base_prefix_target := "${base_prefix}"
  
  # Base paths
  export base_bindir = "${base_prefix}/bin"

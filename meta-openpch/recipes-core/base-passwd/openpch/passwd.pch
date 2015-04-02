@@ -1,0 +1,13 @@
+root::0:0:root:/root:/bin/true
+daemon:x:1:1:daemon:/usr/sbin:/bin/true
+bin:x:2:2:bin:/bin:/bin/true
+sys:x:3:3:sys:/dev:/bin/true
+sync:x:4:100:sync:/bin:/bin/sync
+mail:x:8:8:mail:/var/spool/mail:/bin/true
+proxy:x:13:13:proxy:/bin:/bin/true
+www-data:x:33:33:www-data:/var/www:/bin/true
+backup:x:34:34:backup:/var/backups:/bin/true
+operator:x:37:37:Operator:/var:/bin/true
+nobody:x:99:99:nobody:/home:/bin/sh
+guest:x:1000:1000:Default non-root user:/home/default:/bin/sh
+nmt:x:1001:1001:NMT user:/home/nmt:/bin/true

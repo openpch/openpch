@@ -23,7 +23,7 @@ SYSROOT=""
 if test "x$D" != "x"; then
 	# Installing into a sysroot
 	SYSROOT="$D"
-	OPT="--root $D${base_prefix}"
+	OPT="--root $D"
 
 	# Add groups and users defined for all recipe packages
 	GROUPADD_PARAM="${@get_all_cmd_params(d, 'groupadd')}"

@@ -1,6 +1,3 @@
-# add this dir in file search so we can overwrite opkg.conf
-FILESEXTRAPATHS_prepend := "${THISDIR}:"
-
 # Specific options for openpch
 PACKAGECONFIG ?= "static"
 

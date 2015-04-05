@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Fake runlevel for popcorn hour devices
+echo "N 2"

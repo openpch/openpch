@@ -1,5 +1,5 @@
---- openembedded-core/meta/conf/bitbake.conf	2015-04-02 13:18:18.746799364 +0200
-+++ conf/bitbake.conf	2015-04-02 13:28:56.741941347 +0200
+--- openembedded-core/meta/conf/bitbake.conf	2015-04-04 18:57:18.295416809 +0200
++++ conf/bitbake.conf	2015-04-05 12:27:46.827214381 +0200
 @@ -1,3 +1,4 @@
 +# Automatically generated file with command make patches. Do not edit!
  ##################################################################
@@ -21,28 +21,7 @@
  
  # Base paths
  export base_bindir = "${base_prefix}/bin"
-@@ -433,14 +437,17 @@
- # Build utility info.
- ##################################################################
- 
--CCACHE ??= ""
-+# Set the ccache binary to use don't forget the final space !
-+# Don't use an absolute path also !
-+export CCACHE ??= "ccache "
- # Disable ccache explicitly if CCACHE is null since gcc may be a symlink
- # of ccache some distributions (e.g., Fedora 17).
--export CCACHE_DISABLE ??= "${@[0,1][d.getVar('CCACHE', True) == '']}"
-+# DON'T DEFINE CCACHE_DISABLE IF YOU WANT TO ENABLE CCACHE
-+#export CCACHE_DISABLE ??= "${@[0,1][d.getVar('CCACHE', True) == '']}"
- # Assign CCACHE_DIR a default value to fix a bug of ccache 3.1.7,
- # since it would always create CCACHE_DIR/.ccache even if
- # CCACHE_DISABLE = 1.
--export CCACHE_DIR ??= "${@os.getenv('HOME')}"
-+export CCACHE_DIR ??= "${@os.getenv('HOME')}/.ccache"
- 
- TOOLCHAIN_OPTIONS = " --sysroot=${STAGING_DIR_TARGET}"
- 
-@@ -526,10 +533,15 @@
+@@ -526,10 +530,15 @@
  TARGET_LINK_HASH_STYLE ?= "${@['-Wl,--hash-style=gnu',''][d.getVar('LINKER_HASH_STYLE', True) != 'gnu']}"
  
  export LDFLAGS = "${TARGET_LDFLAGS}"
@@ -62,7 +41,7 @@
  
  # Which flags to leave by strip-flags() in bin/build/oebuild.sh ?
  ALLOWED_FLAGS = "-O -mcpu -march -pipe"
-@@ -605,7 +617,7 @@
+@@ -605,7 +614,7 @@
  
  # Use pseudo as the fakeroot implementation
  PSEUDO_LOCALSTATEDIR ?= "${WORKDIR}/pseudo/"

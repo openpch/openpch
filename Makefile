@@ -289,6 +289,8 @@ $(TOPDIR)/conf/local.conf: $(DEPDIR)/.local.conf.$(MACHINE).$(LOCAL_CONF_HASH)
 	@echo 'TOPDIR = "$(TOPDIR)"' >> $@
 	@echo 'MACHINE = "$(MACHINE)"' >> $@
 	@echo 'TMPDIR = "$(TMPDIR)"' >> $@
+	@echo 'CCACHE_DIR = "${HOME}/.ccache"' >> $@
+	@echo 'INHERIT += "ccache rm_work"' >> $@
 	@echo 'require $(CURDIR)/conf/openpch.conf' >> $@
 	@echo 'include $(DISTRO_INCLUDE_CONF)' >> $@
 	@echo 'include $(MACHINE_INCLUDE_CONF)' >> $@

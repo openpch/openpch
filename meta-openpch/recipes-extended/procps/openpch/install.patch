@@ -1,0 +1,45 @@
+--- procps-3.2.8/Makefile.orig	2015-04-05 16:42:05.084617740 +0200
++++ procps-3.2.8/Makefile	2015-04-05 16:45:29.152456118 +0200
+@@ -29,19 +29,16 @@
+ ln_sf    := ln -sf
+ install  := install -D --owner 0 --group 0
+ 
+-# Lame x86-64 /lib64 and /usr/lib64 abomination:
+-lib64    := lib$(shell [ -d /lib64 ] && echo 64)
+-
+-usr/bin                  := $(DESTDIR)/usr/bin/
+-bin                      := $(DESTDIR)/bin/
+-sbin                     := $(DESTDIR)/sbin/
+-usr/proc/bin             := $(DESTDIR)/usr/bin/
+-man1                     := $(DESTDIR)/usr/share/man/man1/
+-man5                     := $(DESTDIR)/usr/share/man/man5/
+-man8                     := $(DESTDIR)/usr/share/man/man8/
+-lib                      := $(DESTDIR)/$(lib64)/
+-usr/lib                  := $(DESTDIR)/usr/$(lib64)/
+-usr/include              := $(DESTDIR)/usr/include/
++usr/bin                  := $(DESTDIR)$(bindir)/
++bin                      := $(DESTDIR)$(bindir)/
++sbin                     := $(DESTDIR)$(sbindir)/
++usr/proc/bin             := $(DESTDIR)$(bindir)/
++man1                     := $(DESTDIR)$(mandir)/man1/
++man5                     := $(DESTDIR)$(mandir)/man5/
++man8                     := $(DESTDIR)$(mandir)/man8/
++lib                      := $(DESTDIR)/$(base_libdir)/
++usr/lib                  := $(DESTDIR)$(libdir)/
++usr/include              := $(DESTDIR)$(includedir)/
+ 
+ #SKIP     := $(bin)kill $(man1)kill.1
+ 
+@@ -222,10 +219,10 @@
+ ###### install
+ 
+ $(BINFILES) : all
+-	$(install) --mode a=rx $(notdir $@) $@
++	$(install) -m 555 $(notdir $@) $@
+ 
+ $(MANFILES) : all
+-	$(install) --mode a=r $(notdir $@) $@
++	$(install) -m 444 $(notdir $@) $@
+ 
+ install: $(filter-out $(SKIP) $(addprefix $(DESTDIR),$(SKIP)),$(INSTALL))
+ 	cd $(usr/bin) && $(ln_f) skill snice
